@@ -31,10 +31,11 @@ import software.amazon.kinesis.common.KinesisClientUtil;
 import software.amazon.kinesis.coordinator.Scheduler;
 
 /**
- * Uses the Kinesis Client Library (KCL) 2.2.9 to continuously consume and process stock trade
- * records from the stock trades stream. KCL monitors the number of shards and creates
- * record processor instances to read and process records from each shard. KCL also
- * load balances shards across all the instances of this processor.
+ * Uses the Kinesis Client Library (KCL) 2.2.9 to continuously consume and
+ * process stock trade records from the stock trades stream. KCL monitors the
+ * number of shards and creates record processor instances to read and process
+ * records from each shard. KCL also load balances shards across all the
+ * instances of this processor.
  *
  */
 public class StockTradesProcessor {
@@ -42,8 +43,8 @@ public class StockTradesProcessor {
     private static final Log LOG = LogFactory.getLog(StockTradesProcessor.class);
 
     private static final Logger ROOT_LOGGER = Logger.getLogger("");
-    private static final Logger PROCESSOR_LOGGER =
-            Logger.getLogger("com.amazonaws.services.kinesis.samples.stocktrades.processor.StockTradeRecordProcessor");
+    private static final Logger PROCESSOR_LOGGER = Logger
+            .getLogger("com.amazonaws.services.kinesis.samples.stocktrades.processor.StockTradeRecordProcessor");
 
     private static void checkUsage(String[] args) {
         if (args.length != 3) {
@@ -54,15 +55,16 @@ public class StockTradesProcessor {
     }
 
     /**
-     * Sets the global log level to WARNING and the log level for this package to INFO,
-     * so that we only see INFO messages for this processor. This is just for the purpose
-     * of this tutorial, and should not be considered as best practice.
+     * Sets the global log level to WARNING and the log level for this package to
+     * INFO, so that we only see INFO messages for this processor. This is just for
+     * the purpose of this tutorial, and should not be considered as best practice.
      *
      */
     private static void setLogLevels() {
         ROOT_LOGGER.setLevel(Level.WARNING);
-        // Set this to INFO for logging at INFO level. Suppressed for this example as it can be noisy.
-        PROCESSOR_LOGGER.setLevel(Level.WARNING);
+        // Set this to INFO for logging at INFO level. Suppressed for this example as it
+        // can be noisy.
+        PROCESSOR_LOGGER.setLevel(Level.INFO);
     }
 
     public static void main(String[] args) throws Exception {
@@ -79,21 +81,17 @@ public class StockTradesProcessor {
             System.exit(1);
         }
 
-        KinesisAsyncClient kinesisClient = KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder().region(region));
+        KinesisAsyncClient kinesisClient = KinesisClientUtil
+                .createKinesisAsyncClient(KinesisAsyncClient.builder().region(region));
         DynamoDbAsyncClient dynamoClient = DynamoDbAsyncClient.builder().region(region).build();
         CloudWatchAsyncClient cloudWatchClient = CloudWatchAsyncClient.builder().region(region).build();
         StockTradeRecordProcessorFactory shardRecordProcessor = new StockTradeRecordProcessorFactory();
-        ConfigsBuilder configsBuilder = new ConfigsBuilder(streamName, applicationName, kinesisClient, dynamoClient, cloudWatchClient, UUID.randomUUID().toString(), shardRecordProcessor);
+        ConfigsBuilder configsBuilder = new ConfigsBuilder(streamName, applicationName, kinesisClient, dynamoClient,
+                cloudWatchClient, UUID.randomUUID().toString(), shardRecordProcessor);
 
-        Scheduler scheduler = new Scheduler(
-                configsBuilder.checkpointConfig(),
-                configsBuilder.coordinatorConfig(),
-                configsBuilder.leaseManagementConfig(),
-                configsBuilder.lifecycleConfig(),
-                configsBuilder.metricsConfig(),
-                configsBuilder.processorConfig(),
-                configsBuilder.retrievalConfig()
-        );
+        Scheduler scheduler = new Scheduler(configsBuilder.checkpointConfig(), configsBuilder.coordinatorConfig(),
+                configsBuilder.leaseManagementConfig(), configsBuilder.lifecycleConfig(),
+                configsBuilder.metricsConfig(), configsBuilder.processorConfig(), configsBuilder.retrievalConfig());
         int exitCode = 0;
         try {
             scheduler.run();

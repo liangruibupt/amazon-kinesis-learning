@@ -29,6 +29,8 @@ import software.amazon.kinesis.lifecycle.events.ShardEndedInput;
 import software.amazon.kinesis.lifecycle.events.ShutdownRequestedInput;
 import software.amazon.kinesis.processor.ShardRecordProcessor;
 
+import java.util.List;
+
 import com.amazonaws.services.kinesis.samples.stocktrades.model.StockTrade;
 import software.amazon.kinesis.retrieval.KinesisClientRecord;
 
@@ -65,16 +67,30 @@ public class StockTradeRecordProcessor implements ShardRecordProcessor {
 
     @Override
     public void processRecords(ProcessRecordsInput processRecordsInput) {
-        // TODO: Implement method
+        List<KinesisClientRecord> records = processRecordsInput.records();
+        // Used to update the last processed record
+        RecordProcessorCheckpointer checkpointer = processRecordsInput.checkpointer();
+        for (KinesisClientRecord recode : records) {
+            try {
+                processRecord(recode);
+            } catch (Exception ex) {
+                log.warn(ex.getMessage());
+            }
+        }
+        reportStats();
 
     }
 
     private void reportStats() {
-        // TODO: Implement method
+        System.out.println("****** Shard " + kinesisShardId + " stats for last 1 minute ******\n" + stockStats + "\n"
+                + "****************************************************************\n");
+
     }
 
     private void resetStats() {
-        // TODO: Implement method
+
+        stockStats = new StockStats();
+
     }
 
     private void processRecord(KinesisClientRecord record) {
@@ -82,10 +98,21 @@ public class StockTradeRecordProcessor implements ShardRecordProcessor {
         record.data().get(arr);
         StockTrade trade = StockTrade.fromJsonAsBytes(arr);
         if (trade == null) {
-            log.warn("Skipping record. Unable to parse record into StockTrade. Partition Key: " + record.partitionKey());
+            log.warn(
+                    "Skipping record. Unable to parse record into StockTrade. Partition Key: " + record.partitionKey());
             return;
         }
+        log.info("processRecord from kinesis." + trade);
         stockStats.addStockTrade(trade);
+        // v1.x
+        // StockTrade trade = StockTrade.fromJsonAsBytes(record.getData().array());
+        // if (trade == null) {
+        // LOG.warn("Skipping record. Unable to parse record into StockTrade. Partition
+        // Key: "
+        // + record.getPartitionKey());
+        // return;
+        // }
+        // stockStats.addStockTrade(trade);
     }
 
     @Override
@@ -96,7 +123,8 @@ public class StockTradeRecordProcessor implements ShardRecordProcessor {
     @Override
     public void shardEnded(ShardEndedInput shardEndedInput) {
         try {
-            // Important to checkpoint after reaching end of shard, so we can start processing data from child shards.
+            // Important to checkpoint after reaching end of shard, so we can start
+            // processing data from child shards.
             log.info("Reached shard end checkpointing.");
             shardEndedInput.checkpointer().checkpoint();
         } catch (ShutdownException | InvalidStateException e) {
@@ -119,10 +147,12 @@ public class StockTradeRecordProcessor implements ShardRecordProcessor {
             // Ignore checkpoint if the processor instance has been shutdown (fail over).
             log.info("Caught shutdown exception, skipping checkpoint.", se);
         } catch (ThrottlingException e) {
-            // Skip checkpoint when throttled. In practice, consider a backoff and retry policy.
+            // Skip checkpoint when throttled. In practice, consider a backoff and retry
+            // policy.
             log.error("Caught throttling exception, skipping checkpoint.", e);
         } catch (InvalidStateException e) {
-            // This indicates an issue with the DynamoDB table (check for table, provisioned IOPS).
+            // This indicates an issue with the DynamoDB table (check for table, provisioned
+            // IOPS).
             log.error("Cannot save checkpoint to the DynamoDB table used by the Amazon Kinesis Client Library.", e);
         }
     }
