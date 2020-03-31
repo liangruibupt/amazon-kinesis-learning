@@ -300,6 +300,25 @@ java com.amazonaws.services.kinesis.samples.stocktrades.processor.StockTradesPro
 3. Delete Stream.
 
 4. Open the DynamoDB console and Delete the **StockTradesProcessor** table.
+
+
+## Proxy support kinesis-client
+Base on below documents, aws-sdk-java 2.0+ Sync Apache HTTP Client and 2.0+ Async Netty HTTP Client support Client HTTP Proxy Configuration
+https://github.com/aws/aws-sdk-java-v2/blob/master/docs/LaunchChangelog.md#132-client-http-proxy-configuration
+https://github.com/aws/aws-sdk-java-v2/issues/858
+
+```java
+ProxyConfiguration.Builder proxyConfig =
+        ProxyConfiguration.builder().host("http-se.some.host.com").port(8080).username("foo").password("bar");
+
+ApacheHttpClient.Builder httpClientBuilder = 
+        ApacheHttpClient.builder()
+                        .proxyConfiguration(proxyConfig.build());
+KinesisAsyncClient kinesisClient = KinesisAsyncClient.builder().region(region).httpClientBuilder(httpClientBuilder).build();
+
+NettyNioAsyncHttpClient.Builder nettyBuilder = NettyNioAsyncHttpClient.builder()
+                .proxyConfiguration(proxyConfig.builder());
+KinesisAsyncClient kinesisClient = KinesisAsyncClient.builder().region(region).httpClientBuilder(nettyBuilder).build();
 ```
 
 ## License Summary
