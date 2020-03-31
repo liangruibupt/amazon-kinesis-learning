@@ -303,8 +303,10 @@ java com.amazonaws.services.kinesis.samples.stocktrades.processor.StockTradesPro
 
 
 ## Proxy support kinesis-client
-Base on below documents, aws-sdk-java 2.0+ Sync Apache HTTP Client and 2.0+ Async Netty HTTP Client support Client HTTP Proxy Configuration
+Based on below documents, aws-sdk-java 2.0+ Sync Apache HTTP Client and 2.0+ Async Netty HTTP Client can support Client HTTP Proxy Configuration
+
 https://github.com/aws/aws-sdk-java-v2/blob/master/docs/LaunchChangelog.md#132-client-http-proxy-configuration
+
 https://github.com/aws/aws-sdk-java-v2/issues/858
 
 ```java
