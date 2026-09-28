@@ -37,7 +37,7 @@
         <aws-kinesis-client.version>2.2.9</aws-kinesis-client.version>
         <aws-java-sdk.version>1.11.754</aws-java-sdk.version>
         <aws-sdk-client.version>2.11.4</aws-sdk-client.version>
-        <jackson.version>2.10.3</jackson.version>
+        <jackson.version>2.18.9</jackson.version>
     </properties>
 
 
